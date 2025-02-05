@@ -1,5 +1,6 @@
 import { createSelector } from 'reselect';
 import sortBy from 'lodash/sortBy';
+import get from 'lodash/get';
 import { useAppSelector } from '../hooks';
 import { RechartsRootState } from '../store';
 import {
@@ -210,7 +211,20 @@ export const combineTooltipPayload = (
     const finalNameKey: DataKey<any> | undefined = settings?.nameKey; // ?? tooltipAxis?.nameKey;
     let tooltipPayload: unknown;
     if (tooltipAxis?.dataKey && !tooltipAxis?.allowDuplicatedCategory && Array.isArray(sliced)) {
-      tooltipPayload = findEntryInArray(sliced, tooltipAxis.dataKey, activeLabel);
+      if (activeLabel || !sliced?.length) {
+        tooltipPayload = findEntryInArray(
+          sliced,
+          entry => {
+            if (!Array.isArray(entry)) {
+              return get(entry, tooltipAxis.dataKey as string);
+            }
+            return entry.find((item: any) => item.dataKey === tooltipAxis.dataKey)?.value;
+          },
+          activeLabel,
+        );
+      } else {
+        tooltipPayload = tooltipPayloadSearcher(sliced, activeIndex, computedData, finalNameKey);
+      }
     } else {
       tooltipPayload = tooltipPayloadSearcher(sliced, activeIndex, computedData, finalNameKey);
     }

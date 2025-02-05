@@ -102,7 +102,22 @@ export function findEntryInArray<T>(
     return null;
   }
 
-  return ary.find(
+  return ary.find(entry => {
+    const c = typeof specifiedKey === 'function' ? specifiedKey(entry) : get(entry, specifiedKey);
+    return entry && c === specifiedValue;
+  });
+}
+
+export function findEntriesInArray<T>(
+  ary: ReadonlyArray<T>,
+  specifiedKey: number | string | ((entry: T) => unknown),
+  specifiedValue: unknown,
+) {
+  if (!ary || !ary.length) {
+    return null;
+  }
+
+  return ary.filter(
     entry =>
       entry && (typeof specifiedKey === 'function' ? specifiedKey(entry) : get(entry, specifiedKey)) === specifiedValue,
   );
